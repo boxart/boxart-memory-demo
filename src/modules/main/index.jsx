@@ -1,18 +1,14 @@
 import React from 'react';
-import update from 'react-addons-update';
 
-import {Animated, AnimatedAgent, Batch, BatchFactory} from 'boxart';
+import {Animated, AnimatedAgent, Batch} from 'boxart';
 
 import Component from '../update-ancestor';
 
 import Clamp from '../clamp';
-import ClipPlayer from '../../../tools/animated-preview/clip-player';
 
 import {int} from '../../util/rng';
 
 import Card from './card';
-
-const clips = require.context('./clips');
 
 function intGen(rngState) {
   const fn = () => {
@@ -25,7 +21,7 @@ function intGen(rngState) {
 }
 
 function createIndex(gen, unmatched) {
-  let rows = [[], [], [], []]
+  const rows = [[], [], [], []]
   .map(row => {
     row.key = gen();
     return row;
@@ -37,13 +33,14 @@ function createIndex(gen, unmatched) {
 }
 
 function updateIndex(index, unmatched) {
-  let rows = index.slice();
+  const rows = index.slice();
+  const isCard = card => Boolean(card);
   for (let j = 0; j < 4; j++) {
     for (let i = 0; i < 4; i++) {
       let card = null;
-      for (const check_card of unmatched) {
-        if (check_card.y === j && check_card.x === i) {
-          card = check_card;
+      for (const checkCard of unmatched) {
+        if (checkCard.y === j && checkCard.x === i) {
+          card = checkCard;
           break;
         }
       }
@@ -57,7 +54,7 @@ function updateIndex(index, unmatched) {
     }
     // Filter out null entries;
     if (rows[j] !== index[j]) {
-      rows[j] = rows[j].filter(card => Boolean(card));
+      rows[j] = rows[j].filter(isCard);
       rows[j].key = index[j].key;
     }
   }
@@ -65,7 +62,7 @@ function updateIndex(index, unmatched) {
 }
 
 function createGame(rngState) {
-  let gen = intGen(rngState);
+  const gen = intGen(rngState);
 
   const game = {
     cards: [],
@@ -76,21 +73,21 @@ function createGame(rngState) {
     score: 0,
   };
 
-  let faces = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8];
+  const faces = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8];
 
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
-      let faceIndex = Math.abs(gen()) % faces.length;
-      let face = faces[faceIndex];
+      const faceIndex = Math.abs(gen()) % faces.length;
+      const face = faces[faceIndex];
       faces.splice(faceIndex, 1);
       game.cards.push({
-        face: face,
+        face,
         faceDown: true,
         known: false,
         key: gen(),
         x: i,
         y: j,
-      })
+      });
     }
   }
 
@@ -102,7 +99,7 @@ function createGame(rngState) {
 }
 
 function cantFlip(lastGame) {
-  let faceUp = lastGame.faceUp;
+  const faceUp = lastGame.faceUp;
   for (let i = 0; i < faceUp.length && faceUp.length - i >= 2; i += 2) {
     if (faceUp[i].face !== faceUp[i + 1].face) {
       return true;
@@ -111,8 +108,9 @@ function cantFlip(lastGame) {
   return false;
 }
 
-function flipCard(lastGame, card) {
-  let cards = lastGame.cards.slice();
+function flipCard(lastGame, _card) {
+  const cards = lastGame.cards.slice();
+  let card = _card;
 
   for (let i = 0; i < cards.length; i++) {
     if (cards[i].x === card.x && cards[i].y === card.y) {
@@ -139,41 +137,40 @@ function checkMatch(lastGame) {
   //   }
   //   return carry;
   // }, []);
-  let faceUp = lastGame.faceUp;
+  const faceUp = lastGame.faceUp;
 
   if (faceUp.length >= 2) {
     if (faceUp[0].face === faceUp[1].face) {
-      let cards = lastGame.cards.reduce((carry, card) => {
+      const cards = lastGame.cards.reduce((carry, card) => {
         if (card !== faceUp[0] && card !== faceUp[1]) {
           carry.push(card);
         }
         return carry;
       }, []);
       return Object.assign({}, lastGame, {
-        cards: cards,
+        cards,
         grid: updateIndex(lastGame.grid, cards),
         matches: lastGame.matches.concat([faceUp]),
         // score: lastGame.matches.length + 1,
         faceUp: lastGame.faceUp.slice(2),
       });
     }
-    else {
-      let cards = lastGame.cards.slice();
 
-      for (let i = 0; i < cards.length; i++) {
-        if (cards[i] === faceUp[0] || cards[i] === faceUp[1]) {
-          cards[i] = Object.assign({}, cards[i], {
-            faceDown: true,
-          });
-        }
+    const cards = lastGame.cards.slice();
+
+    for (let i = 0; i < cards.length; i++) {
+      if (cards[i] === faceUp[0] || cards[i] === faceUp[1]) {
+        cards[i] = Object.assign({}, cards[i], {
+          faceDown: true,
+        });
       }
-
-      return Object.assign({}, lastGame, {
-        cards: cards,
-        grid: updateIndex(lastGame.grid, cards),
-        faceUp: lastGame.faceUp.slice(2),
-      });
     }
+
+    return Object.assign({}, lastGame, {
+      cards,
+      grid: updateIndex(lastGame.grid, cards),
+      faceUp: lastGame.faceUp.slice(2),
+    });
   }
 
   return lastGame;
@@ -204,7 +201,7 @@ class Main extends Component {
 
     this.setState(Object.assign({}, this.state, {game: flipCard(this.state.game, card)}));
 
-    if (this.state.game.faceUp.length % 2 == 0) {
+    if (this.state.game.faceUp.length % 2 === 0) {
       setTimeout(() => {
         this.setState(Object.assign({}, this.state, {game: checkMatch(this.state.game)}));
       }, 3000);
@@ -215,19 +212,6 @@ class Main extends Component {
   }
 
   cleanTile(tile) {
-    if (!this._cleanTile) {
-      this._cleanTiles = [];
-      this._cleanTile = Promise.resolve()
-      .then(() => new Promise(requestAnimationFrame))
-      .then(() => {
-        this._cleanTile = null;
-        this.updateState({
-          grid: {$set: cleanGrid(this.state.grid, this._cleanTiles)},
-        });
-        this._cleanTiles = [];
-      });
-    }
-    this._cleanTiles.push(tile);
   }
 
   animateTile(tile) {
@@ -243,8 +227,8 @@ class Main extends Component {
         position: 'absolute',
         width: `${100 / 4.5 + 0.001953125}%`,
         height: `${100 / 4.5 + 0.001953125}%`,
-        left: `${card.x * 100 / 4 + (100/4 - 100/4.5) / 2.0 - 0.0009765625}%`,
-        bottom: `${card.y * 100 / 4 + (100/4 - 100/4.5) / 2.0 - 0.0009765625}%`,
+        left: `${card.x * 100 / 4 + (100 / 4 - 100 / 4.5) / 2.0 - 0.0009765625}%`,
+        bottom: `${card.y * 100 / 4 + (100 / 4 - 100 / 4.5) / 2.0 - 0.0009765625}%`,
       }} onClick={() => this.flipCard(card)}>
         <Card rooster={card.face} faceDown={card.faceDown}/>
       </div>

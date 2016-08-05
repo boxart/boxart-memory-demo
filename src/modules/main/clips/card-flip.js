@@ -1,7 +1,3 @@
-const sinHalfT = t => Math.sin(t * Math.PI);
-const sinQuarterT = t => Math.sin(t * Math.PI / 2);
-const launchT = t => -(t - 1) * (t - 1) + 1;
-
 export default {
   metadata: {
     name: 'Card - Flip',
