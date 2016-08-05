@@ -13,5 +13,12 @@ before_script:
   - sleep 3 # give xvfb some time to start
   - npm install -g grunt-cli
 
+script: npm run deploy
+
+env:
+  global:
+  - ENCRYPTION_LABEL: "b410a1096d5b"
+  - COMMIT_AUTHOR_EMAIL: "mzgoddard@gmail.com"
+
 addons:
   firefox: "latest"
