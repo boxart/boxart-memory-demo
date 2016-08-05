@@ -17,7 +17,7 @@ script: npm run deploy
 
 env:
   global:
-  - ENCRYPTION_LABEL: "b410a1096d5b"
+  - ENCRYPTION_LABEL: "56483585b278"
   - COMMIT_AUTHOR_EMAIL: "mzgoddard@gmail.com"
 
 addons:
