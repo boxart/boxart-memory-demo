@@ -3,7 +3,7 @@ set -e # Exit with nonzero exit code if anything fails
 
 SOURCE_BRANCH="master"
 TARGET_BRANCH="gh-pages"
-TARGET_NODE_VERSION="5.0.0"
+TARGET_NODE_VERSION="5"
 
 function doCompile {
   grunt build
