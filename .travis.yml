@@ -1,0 +1,25 @@
+language: node_js
+node_js:
+  - "5"
+  - "4"
+
+before_script:
+  - echo "$TRAVIS_NODE_VERSION"
+  # Set a display port and start xvfb so firefox has an x server to render into
+  # while testing. Without this Firefox will try to launch but would fail.
+  # Firefox is a fallback for untrusted pulls that won't have access to
+  # browserstack.
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+  - npm install -g grunt-cli
+
+script: npm run deploy
+
+env:
+  global:
+  - ENCRYPTION_LABEL: "56483585b278"
+  - COMMIT_AUTHOR_EMAIL: "mzgoddard@gmail.com"
+
+addons:
+  firefox: "latest"
