@@ -3,13 +3,14 @@ set -e # Exit with nonzero exit code if anything fails
 
 SOURCE_BRANCH="master"
 TARGET_BRANCH="gh-pages"
+TARGET_NODE_VERSION="5.0.0"
 
 function doCompile {
   grunt build
 }
 
 # Pull requests and commits to other branches shouldn't try to deploy, just build to verify
-if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_BRANCH" != "$SOURCE_BRANCH" ]; then
+if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_BRANCH" != "$SOURCE_BRANCH" -o "$TRAVIS_NODE_VERSION" != "$TARGET_NODE_VERSION" ]; then
     echo "Skipping deploy; just doing a build."
     doCompile
     exit 0
