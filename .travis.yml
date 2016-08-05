@@ -4,6 +4,7 @@ node_js:
   - "4"
 
 before_script:
+  - echo "$TRAVIS_NODE_VERSION"
   # Set a display port and start xvfb so firefox has an x server to render into
   # while testing. Without this Firefox will try to launch but would fail.
   # Firefox is a fallback for untrusted pulls that won't have access to
